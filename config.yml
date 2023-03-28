@@ -39,6 +39,7 @@ native_service_types:
   - sharepoint
   - mssql
   - jira
+  - confluence
 
 
 # Connector client settings
@@ -58,3 +59,4 @@ sources:
   sharepoint: connectors.sources.sharepoint:SharepointDataSource
   mssql: connectors.sources.mssql:MSSQLDataSource
   jira: connectors.sources.jira:JiraDataSource
+  confluence: connectors.sources.confluence:ConfluenceDataSource
