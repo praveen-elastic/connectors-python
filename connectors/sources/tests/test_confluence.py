@@ -109,6 +109,23 @@ EXPECTED_ATTACHMENT = {
 
 RESPONSE_CONTENT = "# This is the dummy file"
 
+RESPONSE_SPACE_KEYS = {
+    "results": [
+        {
+            "id": 23456,
+            "key": "DM",
+        },
+        {
+            "id": 9876,
+            "key": "ES",
+        },
+    ],
+    "start": 0,
+    "limit": 100,
+    "size": 2,
+    "_links": {},
+}
+
 EXPECTED_CONTENT = {
     "_id": "att3637249",
     "_timestamp": "2023-01-03T09:24:50.633Z",
@@ -182,7 +199,7 @@ def test_tweak_bulk_options():
 
 
 @pytest.mark.asyncio
-async def test_close_with_client_session():
+async def test_close_with_client_session(patch_logger):
     """Test close method for closing the existing session"""
 
     # Setup
@@ -196,7 +213,7 @@ async def test_close_with_client_session():
 
 
 @pytest.mark.asyncio
-async def test_close_without_client_session():
+async def test_close_without_client_session(patch_logger):
     """Test close method when the session does not exist"""
     # Setup
     source = create_source(ConfluenceDataSource)
@@ -205,6 +222,35 @@ async def test_close_without_client_session():
     await source.close()
 
     assert source.confluence_client.session is None
+
+
+@pytest.mark.asyncio
+async def test_verify_spaces_when_space_keys_are_valid():
+    """Test verify_spaces method with valid space keys"""
+    source = create_source(ConfluenceDataSource)
+    source.confluence_client.spaces = ["DM", "ES"]
+    async_response = AsyncMock()
+    async_response.__aenter__ = AsyncMock(
+        return_value=JSONAsyncMock(RESPONSE_SPACE_KEYS)
+    )
+
+    with mock.patch("aiohttp.ClientSession.get", return_value=async_response):
+        await source.confluence_client.verify_spaces()
+
+
+@pytest.mark.asyncio
+async def test_verify_spaces_when_space_keys_are_unavailable_then_raise_exception():
+    """Test verify_spaces method with unavailable space keys"""
+    source = create_source(ConfluenceDataSource)
+    source.confluence_client.spaces = ["ES", "CS"]
+    async_response = AsyncMock()
+    async_response.__aenter__ = AsyncMock(
+        return_value=JSONAsyncMock(RESPONSE_SPACE_KEYS)
+    )
+
+    with mock.patch("aiohttp.ClientSession.get", return_value=async_response):
+        with pytest.raises(Exception, match="Configured unavailable spaces: CS"):
+            await source.confluence_client.verify_spaces()
 
 
 class MockSSL:
@@ -285,7 +331,7 @@ async def test_ping_for_failed_connection_exception(mock_get):
             await source.ping()
 
 
-def test_validate_configuration_for_ssl_enabled():
+def test_validate_configuration_for_ssl_enabled(patch_logger):
     """This function tests _validate_configuration when certification is empty and ssl is enabled"""
     # Setup
     source = create_source(ConfluenceDataSource)
