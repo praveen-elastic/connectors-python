@@ -199,7 +199,7 @@ def test_tweak_bulk_options():
 
 
 @pytest.mark.asyncio
-async def test_close_with_client_session(patch_logger):
+async def test_close_with_client_session():
     """Test close method for closing the existing session"""
 
     # Setup
@@ -213,7 +213,7 @@ async def test_close_with_client_session(patch_logger):
 
 
 @pytest.mark.asyncio
-async def test_close_without_client_session(patch_logger):
+async def test_close_without_client_session():
     """Test close method when the session does not exist"""
     # Setup
     source = create_source(ConfluenceDataSource)
