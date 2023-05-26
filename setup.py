@@ -29,7 +29,7 @@ from connectors import __version__  # NOQA
 # $ pip install -r requirements/`uname -n`.txt
 # $ pip install elasticsearch-connectors
 #
-# Because the *pinned* dependencies is what we tested
+# Because the *pinned* dependencies is what we test
 #
 
 
